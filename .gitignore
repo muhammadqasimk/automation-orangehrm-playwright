@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Playwright output
+test-results/
+playwright-report/
+allure-results/
+allure-report/
+
+# Environment — NEVER commit real credentials
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
