@@ -6,14 +6,16 @@ export class AddEmployeePage extends BasePage {
   readonly firstNameInput: Locator    = this.page.locator('input[name="firstName"]');
   readonly middleNameInput: Locator   = this.page.locator('input[name="middleName"]');
   readonly lastNameInput: Locator     = this.page.locator('input[name="lastName"]');
-  readonly employeeIdInput: Locator   = this.page.locator('.oxd-input').nth(5);
+  readonly employeeIdInput: Locator   = this.page.locator('.oxd-input-group')
+    .filter({ has: this.page.locator('.oxd-label', { hasText: 'Employee Id' }) })
+    .locator('input.oxd-input');
   readonly saveButton: Locator        = this.page.getByRole('button', { name: 'Save' });
-  readonly firstNameError: Locator    = this.page.locator(
-    '.oxd-grid-item:has([name="firstName"]) .oxd-input-field-error-message'
-  );
-  readonly lastNameError: Locator     = this.page.locator(
-    '.oxd-grid-item:has([name="lastName"]) .oxd-input-field-error-message'
-  );
+  readonly firstNameError: Locator    = this.page.locator('input[name="firstName"]')
+    .locator('xpath=../..')
+    .locator('.oxd-input-field-error-message');
+  readonly lastNameError: Locator     = this.page.locator('input[name="lastName"]')
+    .locator('xpath=../..')
+    .locator('.oxd-input-field-error-message');
   readonly profilePictureInput: Locator = this.page.locator('input[type="file"]');
 
   constructor(page: Page) {
