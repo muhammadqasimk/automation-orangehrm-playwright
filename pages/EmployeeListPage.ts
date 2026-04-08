@@ -5,13 +5,13 @@ export class EmployeeListPage extends BasePage {
   // ─── Locators ─────────────────────────────────────────────────────────────
   readonly pageHeading: Locator         = this.page.getByRole('heading', { name: 'Employee Information' });
   readonly employeeNameFilter: Locator  = this.page.locator('.oxd-table-filter input').first();
-  readonly employeeIdFilter: Locator    = this.page.locator('input[placeholder="Type for hints..."]').nth(1);
+  readonly employeeIdFilter: Locator    = this.page.locator('.oxd-table-filter input').nth(1);
   readonly searchButton: Locator        = this.page.getByRole('button', { name: 'Search' });
   readonly resetButton: Locator         = this.page.getByRole('button', { name: 'Reset' });
   readonly addEmployeeButton: Locator   = this.page.getByRole('button', { name: 'Add' });
   readonly tableRows: Locator           = this.page.locator('.oxd-table-body .oxd-table-row');
-  readonly noRecordsMessage: Locator    = this.page.locator('.oxd-table').getByText('No Records Found');
-  readonly recordCount: Locator         = this.page.locator('.orangehrm-bottom-container span');
+  readonly noRecordsMessage: Locator    = this.page.getByText('No Records Found').first();
+  readonly recordCount: Locator         = this.page.getByText(/\(\d+\) Records Found/);
 
   constructor(page: Page) {
     super(page);
