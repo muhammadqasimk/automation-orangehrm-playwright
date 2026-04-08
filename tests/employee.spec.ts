@@ -34,7 +34,7 @@ async function cleanupEmployee(page: Page, employeeId: string): Promise<void> {
 // ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Add Employee', () => {
 
-  test.beforeEach(async ({ addEmployeePage }) => {
+  test.beforeEach(async ({ authenticatedPage, addEmployeePage }) => {
     await addEmployeePage.goto();
   });
 
@@ -134,7 +134,7 @@ test.describe('Employee Management / Input Validation', () => {
 
   // TC-EMP-024: Field clears on 30-char validation error (BUG-012)
   test('TC-EMP-024: first name field clears entered text on 30-character validation error — BUG-012', async ({
-    addEmployeePage,
+    authenticatedPage, addEmployeePage,
   }) => {
     await addEmployeePage.goto();
     await addEmployeePage.firstNameInput.fill(EmployeeData.overMaxLengthName.firstName);
@@ -238,7 +238,7 @@ test.describe('Employee Management / Search', () => {
 
   // TC-EMP-009: Search with no match
   test('TC-EMP-009: search with no matching name shows "No Records Found"', async ({
-    employeeListPage,
+    authenticatedPage, employeeListPage,
   }) => {
     await employeeListPage.goto();
     await employeeListPage.searchByName(EmployeeData.search.noMatch);
@@ -440,7 +440,7 @@ test.describe('Employee Management / API & HTTP', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Field-Level Validation', () => {
 
-  test.beforeEach(async ({ addEmployeePage }) => {
+  test.beforeEach(async ({ authenticatedPage, addEmployeePage }) => {
     await addEmployeePage.goto();
   });
 
@@ -480,7 +480,7 @@ test.describe('Employee Management / Field-Level Validation', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Employee List UI', () => {
 
-  test.beforeEach(async ({ employeeListPage }) => {
+  test.beforeEach(async ({ authenticatedPage, employeeListPage }) => {
     await employeeListPage.goto();
   });
 
@@ -513,6 +513,7 @@ test.describe('Employee Management / Employee List UI', () => {
   test('TC-EMP-039: employee list displays a record count after search completes', async ({
     employeeListPage,
   }) => {
+    await employeeListPage.waitForPageLoad(); // wait for initial employee list fetch to complete
     await employeeListPage.searchButton.click();
     await employeeListPage.waitForPageLoad();
     await expect(employeeListPage.recordCount).toBeVisible();

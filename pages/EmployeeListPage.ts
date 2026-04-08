@@ -10,7 +10,7 @@ export class EmployeeListPage extends BasePage {
   readonly resetButton: Locator         = this.page.getByRole('button', { name: 'Reset' });
   readonly addEmployeeButton: Locator   = this.page.getByRole('button', { name: 'Add' });
   readonly tableRows: Locator           = this.page.locator('.oxd-table-body .oxd-table-row');
-  readonly noRecordsMessage: Locator    = this.page.getByText('No Records Found');
+  readonly noRecordsMessage: Locator    = this.page.locator('.oxd-table').getByText('No Records Found');
   readonly recordCount: Locator         = this.page.locator('.orangehrm-bottom-container span');
 
   constructor(page: Page) {
