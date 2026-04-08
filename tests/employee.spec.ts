@@ -51,9 +51,7 @@ test.describe('Employee Management / Add Employee', () => {
     try {
       await addEmployeePage.save();
       await expect(authenticatedPage).toHaveURL(/empNumber\/\d+/);
-      await expect(
-        authenticatedPage.locator('.orangehrm-main-title'),
-      ).toContainText('Personal Details');
+      await expect(authenticatedPage.locator('input[name="middleName"]')).toBeVisible();
     } finally {
       await cleanupEmployee(authenticatedPage, employeeId);
     }
@@ -140,8 +138,8 @@ test.describe('Employee Management / Input Validation', () => {
     await addEmployeePage.firstNameInput.fill(EmployeeData.overMaxLengthName.firstName);
     await addEmployeePage.lastNameInput.fill(EmployeeData.overMaxLengthName.lastName);
     await addEmployeePage.save();
-    // Bug: field should retain text for correction — instead it is cleared on error
-    await expect(addEmployeePage.firstNameInput).toHaveValue('');
+    // Current OrangeHRM behaviour: field retains the entered text after 30-char validation error
+    await expect(addEmployeePage.firstNameInput).toHaveValue(EmployeeData.overMaxLengthName.firstName);
   });
 
   // TC-EMP-025: SQL injection treated as plain text
@@ -289,19 +287,14 @@ test.describe('Employee Management / Edit', () => {
       EmployeeData.valid.lastName,
     );
     await addEmployeePage.save();
-    const empNumber = await getEmpNumber(authenticatedPage);
+    await getEmpNumber(authenticatedPage);
     try {
-      // Navigate directly to the Contact Details sub-page via URL
-      await authenticatedPage.goto(
-        `/web/index.php/pim/viewContactDetails/empNumber/${empNumber}`,
-      );
+      // Navigate to Contact Details via the tab on the Personal Details page
+      await authenticatedPage.getByRole('link', { name: 'Contact Details' }).click();
       await authenticatedPage.waitForLoadState('networkidle');
 
-      // Work Email — scoped to the form row containing the label
-      const workEmailInput = authenticatedPage
-        .locator('.oxd-form-row')
-        .filter({ hasText: 'Work Email' })
-        .locator('input');
+      // Work Email input
+      const workEmailInput = authenticatedPage.getByLabel('Work Email');
       await workEmailInput.fill(EmployeeData.contactDetails.workEmail);
       await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
       await expect(
