@@ -13,6 +13,14 @@ async function getEmpNumber(page: Page): Promise<string> {
 }
 
 /**
+ * Returns a unique Employee ID string to avoid collisions on the shared demo site.
+ * Uses the last 5 digits of the current timestamp.
+ */
+function uniqueId(): string {
+  return `T${Date.now().toString().slice(-5)}`;
+}
+
+/**
  * Deletes a test employee by searching for their auto-generated Employee ID
  * in the employee list and confirming deletion.
  * Must be called with an authenticated page.
@@ -42,7 +50,8 @@ test.describe('Employee Management / Add Employee', () => {
   test('TC-EMP-001: add employee with valid data redirects to personal details page', async ({
     authenticatedPage, addEmployeePage,
   }) => {
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -94,7 +103,8 @@ test.describe('Employee Management / Input Validation', () => {
     authenticatedPage, addEmployeePage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.numericFirstName.firstName,
       EmployeeData.numericFirstName.lastName,
@@ -113,7 +123,8 @@ test.describe('Employee Management / Input Validation', () => {
     authenticatedPage, addEmployeePage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.xssFirstName.firstName,
       EmployeeData.xssFirstName.lastName,
@@ -147,7 +158,8 @@ test.describe('Employee Management / Input Validation', () => {
     authenticatedPage, addEmployeePage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.sqlInjectionFirstName.firstName,
       EmployeeData.sqlInjectionFirstName.lastName,
@@ -175,7 +187,8 @@ test.describe('Employee Management / Search', () => {
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -196,7 +209,8 @@ test.describe('Employee Management / Search', () => {
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -218,7 +232,8 @@ test.describe('Employee Management / Search', () => {
   }) => {
     // Create a fresh employee so the ID is guaranteed to exist
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -255,7 +270,8 @@ test.describe('Employee Management / Edit', () => {
     authenticatedPage, addEmployeePage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -281,7 +297,8 @@ test.describe('Employee Management / Edit', () => {
     authenticatedPage, addEmployeePage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -291,10 +308,11 @@ test.describe('Employee Management / Edit', () => {
     try {
       // Navigate to Contact Details via the tab on the Personal Details page
       await authenticatedPage.getByRole('link', { name: 'Contact Details' }).click();
+      await authenticatedPage.waitForURL(/viewContactDetails/);
       await authenticatedPage.waitForLoadState('networkidle');
 
-      // Work Email input
-      const workEmailInput = authenticatedPage.getByLabel('Work Email');
+      // Work Email — first email-type input on the Contact Details page
+      const workEmailInput = authenticatedPage.locator('input[type="email"]').first();
       await workEmailInput.fill(EmployeeData.contactDetails.workEmail);
       await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
       await expect(
@@ -316,7 +334,8 @@ test.describe('Employee Management / Delete', () => {
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -341,7 +360,8 @@ test.describe('Employee Management / Delete', () => {
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -371,7 +391,8 @@ test.describe('Employee Management / API & HTTP', () => {
     authenticatedPage, addEmployeePage,
   }) => {
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
@@ -402,7 +423,8 @@ test.describe('Employee Management / API & HTTP', () => {
   }) => {
     // Create a test employee to delete
     await addEmployeePage.goto();
-    const employeeId = await addEmployeePage.employeeIdInput.inputValue();
+    const employeeId = uniqueId();
+    await addEmployeePage.setEmployeeId(employeeId);
     await addEmployeePage.fillEmployeeDetails(
       EmployeeData.valid.firstName,
       EmployeeData.valid.lastName,
