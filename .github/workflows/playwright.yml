@@ -8,14 +8,20 @@ on:
 
 jobs:
   test:
-    name: Run Playwright Tests
+    name: E2E – ${{ matrix.browser }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
 
     env:
       BASE_URL: ${{ secrets.BASE_URL || 'https://opensource-demo.orangehrmlive.com' }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME || 'Admin' }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'admin123' }}
+      CI: true
 
     steps:
       - name: Checkout repository
@@ -31,26 +37,26 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run Playwright tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test --project=${{ matrix.browser }}
 
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
-          retention-days: 30
+          retention-days: 14
 
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results
+          name: allure-results-${{ matrix.browser }}
           path: allure-results/
-          retention-days: 30
+          retention-days: 14
 
   allure-report:
     name: Publish Allure Report
@@ -62,10 +68,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Allure results
+      - name: Download Allure results (chromium)
         uses: actions/download-artifact@v4
         with:
-          name: allure-results
+          name: allure-results-chromium
           path: allure-results
 
       - name: Generate Allure report
@@ -83,3 +89,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-report
+

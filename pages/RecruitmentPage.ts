@@ -29,6 +29,12 @@ export class RecruitmentPage extends BasePage {
   readonly lastNameError: Locator         = this.page.locator(
     '.oxd-grid-item:has([name="lastName"]) .oxd-input-field-error-message'
   );
+  readonly emailError: Locator            = this.page.locator(
+    '.oxd-input-field-error-message'
+  ).first();
+
+  // ─── Candidate list / search ──────────────────────────────────────────────
+  readonly candidateSearchInput: Locator  = this.page.locator('.oxd-table-filter input').first();
 
   constructor(page: Page) {
     super(page);
@@ -44,6 +50,10 @@ export class RecruitmentPage extends BasePage {
     await this.navigate('/web/index.php/recruitment/viewCandidates');
   }
 
+  async gotoAddCandidate(): Promise<void> {
+    await this.navigate('/web/index.php/recruitment/addCandidate');
+  }
+
   async clickAdd(): Promise<void> {
     await this.addButton.click();
   }
@@ -57,6 +67,25 @@ export class RecruitmentPage extends BasePage {
     await this.candidateLastName.fill(lastName);
     await this.candidateEmail.fill(email);
     if (contactNo) await this.candidateContactNo.fill(contactNo);
+  }
+
+  async selectFirstAvailableVacancy(): Promise<void> {
+    await this.vacancyDropdown.click();
+    await this.page.locator('[role="option"]').first().click();
+  }
+
+  async searchCandidateByName(name: string): Promise<void> {
+    await this.candidateSearchInput.fill(name);
+    await this.searchButton.click();
+    await this.waitForPageLoad();
+  }
+
+  async clickDeleteForCandidate(rowIndex: number): Promise<void> {
+    await this.tableRows.nth(rowIndex).getByRole('button').last().click();
+  }
+
+  async confirmDelete(): Promise<void> {
+    await this.page.getByRole('button', { name: 'Yes, Delete' }).click();
   }
 
   async uploadCV(filePath: string): Promise<void> {
