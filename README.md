@@ -1,5 +1,7 @@
 # OrangeHRM Playwright Automation
 
+[![CI](https://github.com/muhammadqasimk/automation-orangehrm-playwright/actions/workflows/playwright.yml/badge.svg)](https://github.com/muhammadqasimk/automation-orangehrm-playwright/actions/workflows/playwright.yml)
+
 End-to-end test automation suite for [OrangeHRM](https://opensource-demo.orangehrmlive.com) built with **Playwright** and **TypeScript**. Covers functional, validation, security, and API-level assertions across four modules with dual HTML + Allure reporting and cross-browser CI.
 
 ---
