@@ -38,8 +38,7 @@ export class LoginPage extends BasePage {
 
   async goto(): Promise<void> {
     await this.navigate('/web/index.php/auth/login');
-    // Wait for Vue to mount the input — page.goto() resolves on 'load' event
-    // but the SPA renders inputs after that
+    // wait for Vue to mount inputs — page resolves on 'load' but SPA renders after
     await this.usernameInput.waitFor({ state: 'visible' });
   }
 

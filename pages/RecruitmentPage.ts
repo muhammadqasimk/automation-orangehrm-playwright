@@ -40,7 +40,6 @@ export class RecruitmentPage extends BasePage {
     super(page);
   }
 
-  // ─── Actions ──────────────────────────────────────────────────────────────
 
   async gotoVacancies(): Promise<void> {
     await this.navigate('/web/index.php/recruitment/viewJobVacancy');

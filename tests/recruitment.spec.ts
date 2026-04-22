@@ -5,20 +5,16 @@ import type { Page } from '@playwright/test';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Returns a unique last name suffix to avoid collisions on the shared demo site. */
+// unique last name and email generators to avoid collisions on the shared demo site
 function uniqueLastName(): string {
   return `C${Date.now().toString().slice(-5)}`;
 }
 
-/** Returns a unique email for each test run. */
 function uniqueEmail(prefix = 'test'): string {
   return `${prefix}+${Date.now()}@example.com`;
 }
 
-/**
- * Deletes a test candidate by searching for their unique last name in the
- * candidate list and confirming deletion.
- */
+// deletes a test candidate by last name — must be called with an authenticated page
 async function cleanupCandidate(page: Page, lastName: string): Promise<void> {
   if (!lastName) return;
   const recruitment = new RecruitmentPage(page);
@@ -31,12 +27,8 @@ async function cleanupCandidate(page: Page, lastName: string): Promise<void> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 1 — Vacancies UI
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Recruitment / Vacancies UI', () => {
 
-  // TC-REC-001: Vacancies list page loads
   test('TC-REC-001: Vacancies list page loads and table is visible', async ({
     authenticatedPage, recruitmentPage,
   }) => {
@@ -44,7 +36,6 @@ test.describe('Recruitment / Vacancies UI', () => {
     await expect(authenticatedPage.locator('.oxd-table')).toBeVisible();
   });
 
-  // TC-REC-002: Add Vacancy button navigates to the Add Vacancy form
   test('TC-REC-002: Add Vacancy button navigates to the Add Vacancy form', async ({
     authenticatedPage, recruitmentPage,
   }) => {
@@ -55,12 +46,8 @@ test.describe('Recruitment / Vacancies UI', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 2 — Candidates UI & Validation
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Recruitment / Candidates UI & Validation', () => {
 
-  // TC-REC-003: Candidates list page loads
   test('TC-REC-003: Candidates list page loads and table is visible', async ({
     authenticatedPage, recruitmentPage,
   }) => {
@@ -68,7 +55,6 @@ test.describe('Recruitment / Candidates UI & Validation', () => {
     await expect(authenticatedPage.locator('.oxd-table')).toBeVisible();
   });
 
-  // TC-REC-004: Add Candidate form shows required errors when empty
   test('TC-REC-004: empty Add Candidate form shows required errors for first name and last name', async ({
     recruitmentPage,
   }) => {
@@ -80,7 +66,6 @@ test.describe('Recruitment / Candidates UI & Validation', () => {
     await expect(recruitmentPage.lastNameError).toHaveText('Required');
   });
 
-  // TC-REC-005: Invalid email format shows a validation error
   test('TC-REC-005: invalid email format shows a validation error', async ({
     recruitmentPage,
   }) => {
@@ -92,7 +77,6 @@ test.describe('Recruitment / Candidates UI & Validation', () => {
     await expect(recruitmentPage.emailError).toBeVisible();
   });
 
-  // TC-REC-006: Search with no match shows "No Records Found"
   test('TC-REC-006: searching candidates with a non-existent name shows "No Records Found"', async ({
     recruitmentPage,
   }) => {
@@ -102,12 +86,8 @@ test.describe('Recruitment / Candidates UI & Validation', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 3 — Add Candidate
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Recruitment / Add Candidate', () => {
 
-  // TC-REC-007: Valid candidate saves successfully
   test('TC-REC-007: add candidate with valid data saves successfully', async ({
     authenticatedPage, recruitmentPage,
   }) => {
@@ -129,7 +109,6 @@ test.describe('Recruitment / Add Candidate', () => {
     }
   });
 
-  // TC-REC-009: Stored XSS in candidate first name — BUG-018
   test('TC-REC-009: XSS payload in candidate first name is stored without sanitisation — BUG-018', async ({
     authenticatedPage, recruitmentPage,
   }) => {
@@ -137,8 +116,8 @@ test.describe('Recruitment / Add Candidate', () => {
     await recruitmentPage.gotoAddCandidate();
     await recruitmentPage.selectFirstAvailableVacancy();
     await recruitmentPage.fillCandidateDetails(
-      RecruitmentData.xssCandidate.firstName,   // XSS payload as first name
-      lastName,                                  // clean unique last name for cleanup
+      RecruitmentData.xssCandidate.firstName,
+      lastName,
       uniqueEmail('xss'),
     );
 
@@ -159,7 +138,6 @@ test.describe('Recruitment / Add Candidate', () => {
     }
   });
 
-  // TC-REC-010: Numeric-only candidate name accepted — BUG-020
   test('TC-REC-010: numeric-only candidate first name is accepted without validation error — BUG-020', async ({
     authenticatedPage, recruitmentPage,
   }) => {
@@ -167,7 +145,7 @@ test.describe('Recruitment / Add Candidate', () => {
     await recruitmentPage.gotoAddCandidate();
     await recruitmentPage.selectFirstAvailableVacancy();
     await recruitmentPage.fillCandidateDetails(
-      RecruitmentData.numericCandidate.firstName,  // '99999'
+      RecruitmentData.numericCandidate.firstName,
       lastName,
       uniqueEmail('numeric'),
     );
@@ -181,7 +159,6 @@ test.describe('Recruitment / Add Candidate', () => {
     }
   });
 
-  // TC-REC-011: Single-digit contact number passes validation — BUG-019
   test('TC-REC-011: single-digit contact number passes validation — BUG-019', async ({
     authenticatedPage, recruitmentPage,
   }) => {

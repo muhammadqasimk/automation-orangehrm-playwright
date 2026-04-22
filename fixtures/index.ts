@@ -7,7 +7,6 @@ import { LeavePage } from '../pages/LeavePage';
 import { RecruitmentPage } from '../pages/RecruitmentPage';
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
 
-// ─── Fixture type definitions ─────────────────────────────────────────────────
 type PageFixtures = {
   loginPage: LoginPage;
   dashboardPage: DashboardPage;
@@ -16,11 +15,10 @@ type PageFixtures = {
   leavePage: LeavePage;
   recruitmentPage: RecruitmentPage;
   forgotPasswordPage: ForgotPasswordPage;
-  /** Pre-authenticated page — skips login for tests that don't test auth */
+  // pre-authenticated page — skips login for tests that don't test auth
   authenticatedPage: Page;
 };
 
-// ─── Extended test with page object fixtures ──────────────────────────────────
 export const test = base.extend<PageFixtures>({
 
   loginPage: async ({ page }, use) => {

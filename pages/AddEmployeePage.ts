@@ -22,7 +22,6 @@ export class AddEmployeePage extends BasePage {
     super(page);
   }
 
-  // ─── Actions ──────────────────────────────────────────────────────────────
 
   async goto(): Promise<void> {
     await this.navigate('/web/index.php/pim/addEmployee');

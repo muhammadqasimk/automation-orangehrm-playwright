@@ -6,25 +6,18 @@ import type { Page } from '@playwright/test';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Waits for the post-save redirect and returns the empNumber from the URL. */
+// wait for the post-save redirect and return the empNumber from the URL
 async function getEmpNumber(page: Page): Promise<string> {
   await page.waitForURL(/empNumber\/\d+/, { timeout: 60_000 });
   return page.url().match(/empNumber\/(\d+)/)?.[1] ?? '';
 }
 
-/**
- * Returns a unique Employee ID string to avoid collisions on the shared demo site.
- * Uses the last 5 digits of the current timestamp.
- */
+// unique Employee ID to avoid collisions on the shared demo site
 function uniqueId(): string {
   return `T${Date.now().toString().slice(-5)}`;
 }
 
-/**
- * Deletes a test employee by searching for their auto-generated Employee ID
- * in the employee list and confirming deletion.
- * Must be called with an authenticated page.
- */
+// deletes a test employee by employee ID — must be called with an authenticated page
 async function cleanupEmployee(page: Page, employeeId: string): Promise<void> {
   if (!employeeId) return;
   const listPage = new EmployeeListPage(page);
@@ -37,16 +30,12 @@ async function cleanupEmployee(page: Page, employeeId: string): Promise<void> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 1 — Add Employee
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Add Employee', () => {
 
   test.beforeEach(async ({ authenticatedPage, addEmployeePage }) => {
     await addEmployeePage.goto();
   });
 
-  // TC-EMP-001: Valid new employee
   test('TC-EMP-001: add employee with valid data redirects to personal details page', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -66,7 +55,6 @@ test.describe('Employee Management / Add Employee', () => {
     }
   });
 
-  // TC-EMP-002: Empty required fields
   test('TC-EMP-002: saving empty form shows Required validation on First Name and Last Name', async ({
     addEmployeePage,
   }) => {
@@ -77,7 +65,6 @@ test.describe('Employee Management / Add Employee', () => {
     await expect(addEmployeePage.lastNameError).toHaveText('Required');
   });
 
-  // TC-EMP-004: Special characters in Employee ID
   test('TC-EMP-004: employee ID field with special characters shows a validation error', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -93,12 +80,8 @@ test.describe('Employee Management / Add Employee', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 2 — Input Validation (Bug Documentation)
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Input Validation', () => {
 
-  // TC-EMP-005: Numeric first name (BUG-010)
   test('TC-EMP-005: first name field accepts numeric-only input — BUG-010', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -118,7 +101,6 @@ test.describe('Employee Management / Input Validation', () => {
     }
   });
 
-  // TC-EMP-023: Stored XSS in first name (BUG-011)
   test('TC-EMP-023: XSS payload in first name is stored without sanitisation — BUG-011', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -141,7 +123,6 @@ test.describe('Employee Management / Input Validation', () => {
     }
   });
 
-  // TC-EMP-024: Field clears on 30-char validation error (BUG-012)
   test('TC-EMP-024: first name field clears entered text on 30-character validation error — BUG-012', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -153,7 +134,6 @@ test.describe('Employee Management / Input Validation', () => {
     await expect(addEmployeePage.firstNameInput).toHaveValue(EmployeeData.overMaxLengthName.firstName);
   });
 
-  // TC-EMP-025: SQL injection treated as plain text
   test('TC-EMP-025: SQL injection in first name is treated as plain text — no error, no bypass', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -177,12 +157,8 @@ test.describe('Employee Management / Input Validation', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 3 — Search
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Search', () => {
 
-  // TC-EMP-006: Search by first name
   test('TC-EMP-006: search by first name returns at least one matching employee', async ({
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
@@ -204,7 +180,6 @@ test.describe('Employee Management / Search', () => {
     }
   });
 
-  // TC-EMP-007: Search by last name
   test('TC-EMP-007: search by last name returns at least one matching employee', async ({
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
@@ -226,7 +201,6 @@ test.describe('Employee Management / Search', () => {
     }
   });
 
-  // TC-EMP-008: Search by employee ID
   test('TC-EMP-008: search by employee ID returns exactly one result', async ({
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
@@ -249,7 +223,6 @@ test.describe('Employee Management / Search', () => {
     }
   });
 
-  // TC-EMP-009: Search with no match
   test('TC-EMP-009: search with no matching name shows "No Records Found"', async ({
     authenticatedPage, employeeListPage,
   }) => {
@@ -260,12 +233,8 @@ test.describe('Employee Management / Search', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 4 — Edit Employee
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Edit', () => {
 
-  // TC-EMP-011: Edit personal details
   test('TC-EMP-011: edit employee personal details (middle name) saves successfully', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -279,7 +248,6 @@ test.describe('Employee Management / Edit', () => {
     await addEmployeePage.save();
     await getEmpNumber(authenticatedPage);
     try {
-      // Personal Details page is loaded immediately after save redirect
       await authenticatedPage.locator('input[name="middleName"]').fill(
         EmployeeData.valid.middleName,
       );
@@ -292,7 +260,6 @@ test.describe('Employee Management / Edit', () => {
     }
   });
 
-  // TC-EMP-012: Edit contact details
   test('TC-EMP-012: edit employee contact details (work email) saves successfully', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -306,12 +273,10 @@ test.describe('Employee Management / Edit', () => {
     await addEmployeePage.save();
     await getEmpNumber(authenticatedPage);
     try {
-      // Navigate to Contact Details via the tab on the Personal Details page
       await authenticatedPage.getByRole('link', { name: 'Contact Details' }).click();
       await authenticatedPage.waitForURL(/viewContactDetails/);
       await authenticatedPage.waitForLoadState('networkidle');
 
-      // Work Email — first email-type input on the Contact Details page
       const workEmailInput = authenticatedPage.locator('input[type="email"]').first();
       await workEmailInput.fill(EmployeeData.contactDetails.workEmail);
       await authenticatedPage.getByRole('button', { name: 'Save' }).first().click();
@@ -324,12 +289,8 @@ test.describe('Employee Management / Edit', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 5 — Delete Employee
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Delete', () => {
 
-  // TC-EMP-016: Delete with confirmation
   test('TC-EMP-016: delete employee with confirmation removes the record from the list', async ({
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
@@ -350,12 +311,10 @@ test.describe('Employee Management / Delete', () => {
     await employeeListPage.confirmDelete();
     await employeeListPage.waitForPageLoad();
 
-    // Verify the record no longer exists
     await employeeListPage.searchByEmployeeId(employeeId);
     await expect(employeeListPage.noRecordsMessage).toBeVisible();
   });
 
-  // TC-EMP-017: Cancel deletion
   test('TC-EMP-017: cancelling delete dialog preserves the employee record', async ({
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
@@ -381,12 +340,8 @@ test.describe('Employee Management / Delete', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 6 — API & HTTP (Bug Documentation)
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / API & HTTP', () => {
 
-  // TC-EMP-028: Add employee returns 200 instead of 201 (BUG-015)
   test('TC-EMP-028: add employee API returns 200 OK instead of 201 Created — BUG-015', async ({
     authenticatedPage, addEmployeePage,
   }) => {
@@ -417,7 +372,6 @@ test.describe('Employee Management / API & HTTP', () => {
     }
   });
 
-  // TC-EMP-029: Delete employee returns 200 instead of 204 (BUG-017)
   test('TC-EMP-029: delete employee API returns 200 OK instead of 204 No Content — BUG-017', async ({
     authenticatedPage, addEmployeePage, employeeListPage,
   }) => {
@@ -450,16 +404,12 @@ test.describe('Employee Management / API & HTTP', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 7 — Field-Level Validation
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Field-Level Validation', () => {
 
   test.beforeEach(async ({ authenticatedPage, addEmployeePage }) => {
     await addEmployeePage.goto();
   });
 
-  // TC-EMP-033: First name filled, last name empty
   test('TC-EMP-033: filling first name but omitting last name shows only the Last Name required error', async ({
     addEmployeePage,
   }) => {
@@ -470,7 +420,6 @@ test.describe('Employee Management / Field-Level Validation', () => {
     await expect(addEmployeePage.firstNameError).not.toBeVisible();
   });
 
-  // TC-EMP-034: Last name filled, first name empty
   test('TC-EMP-034: filling last name but omitting first name shows only the First Name required error', async ({
     addEmployeePage,
   }) => {
@@ -481,7 +430,6 @@ test.describe('Employee Management / Field-Level Validation', () => {
     await expect(addEmployeePage.lastNameError).not.toBeVisible();
   });
 
-  // TC-EMP-035: Employee ID is auto-populated
   test('TC-EMP-035: employee ID field is auto-populated with a non-empty value on a fresh add employee form', async ({
     addEmployeePage,
   }) => {
@@ -490,23 +438,18 @@ test.describe('Employee Management / Field-Level Validation', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROUP 8 — Employee List UI
-// ─────────────────────────────────────────────────────────────────────────────
 test.describe('Employee Management / Employee List UI', () => {
 
   test.beforeEach(async ({ authenticatedPage, employeeListPage }) => {
     await employeeListPage.goto();
   });
 
-  // TC-EMP-036: Page heading is visible
   test('TC-EMP-036: employee list page heading "Employee Information" is visible', async ({
     employeeListPage,
   }) => {
     await expect(employeeListPage.pageHeading).toBeVisible();
   });
 
-  // TC-EMP-037: Add button navigates to add employee form
   test('TC-EMP-037: clicking Add button on employee list navigates to the Add Employee form', async ({
     authenticatedPage, employeeListPage,
   }) => {
@@ -514,7 +457,6 @@ test.describe('Employee Management / Employee List UI', () => {
     await expect(authenticatedPage).toHaveURL(/\/pim\/addEmployee/);
   });
 
-  // TC-EMP-038: Reset filter clears the employee name input
   test('TC-EMP-038: clicking Reset clears the employee name filter field', async ({
     employeeListPage,
   }) => {
@@ -524,7 +466,6 @@ test.describe('Employee Management / Employee List UI', () => {
     await expect(employeeListPage.employeeNameFilter).toHaveValue('');
   });
 
-  // TC-EMP-039: Record count is displayed after search
   test('TC-EMP-039: employee list displays a record count after search completes', async ({
     employeeListPage,
   }) => {

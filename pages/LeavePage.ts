@@ -1,15 +1,13 @@
-import { Page, Locator } from '@playwright/test';
+﻿import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class LeavePage extends BasePage {
-  // ─── Apply for Leave form locators ────────────────────────────────────────
   readonly leaveTypeDropdown: Locator  = this.page.locator('.oxd-select-text').first();
   readonly fromDateInput: Locator      = this.page.locator('input[placeholder="yyyy-dd-mm"]').first();
   readonly toDateInput: Locator        = this.page.locator('input[placeholder="yyyy-dd-mm"]').last();
   readonly commentInput: Locator       = this.page.locator('textarea.oxd-textarea');
   readonly applyButton: Locator        = this.page.getByRole('button', { name: 'Apply' });
 
-  // ─── Leave list locators ──────────────────────────────────────────────────
   readonly tableRows: Locator          = this.page.locator('.oxd-table-body .oxd-table-row');
   readonly noRecordsMessage: Locator   = this.page.getByText('No Records Found');
   readonly dateError: Locator          = this.page.locator('.oxd-input-field-error-message');
@@ -19,7 +17,6 @@ export class LeavePage extends BasePage {
     super(page);
   }
 
-  // ─── Actions ──────────────────────────────────────────────────────────────
 
   async gotoApply(): Promise<void> {
     await this.navigate('/web/index.php/leave/applyLeave');
