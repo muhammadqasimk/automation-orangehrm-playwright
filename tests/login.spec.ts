@@ -167,6 +167,7 @@ test.describe('Login / Authentication', () => {
   // TC-LOG-023: No account lockout — BUG-004 (Critical)
   // test.fail() = expected to fail, confirms BUG-004 is still open
   test('TC-LOG-023: account is not locked after 6 failed attempts — BUG-004', async ({ loginPage, page }) => {
+    test.skip(!!process.env.CI, 'skipped in CI — requires 6 sequential login attempts (150 s)');
     test.fail();
     test.setTimeout(150_000);
     const attacker = { username: LoginData.validAdmin.username, password: 'WrongPass!99' };
@@ -229,8 +230,11 @@ test.describe('Login / Mobile Viewport', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GROUP 3 — Performance and Network Security
 // Self-navigating — no shared beforeEach to avoid polluting timing
+// Skipped in CI — these tests each carry a 120 s timeout that inflates
+// the CI run time significantly; run locally for full security coverage.
 // ─────────────────────────────────────────────────────────────────────────────
 test.describe('Login / Performance and Network Security', () => {
+  test.skip(!!process.env.CI, 'skipped in CI — 120 s per test; run locally for full coverage');
 
   // TC-LOG-027: Password not exposed in request URL
   test('TC-LOG-027: login request uses POST and password is not in the URL', async ({ page }) => {

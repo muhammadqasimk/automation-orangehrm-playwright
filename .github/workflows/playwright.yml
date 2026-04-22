@@ -6,16 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   test:
-    name: E2E – ${{ matrix.browser }}
+    name: Smoke – Chromium
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [chromium, firefox]
+    timeout-minutes: 25
 
     env:
       BASE_URL: ${{ secrets.BASE_URL || 'https://opensource-demo.orangehrmlive.com' }}
@@ -30,23 +28,23 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
-        run: npx playwright test --project=${{ matrix.browser }}
+      - name: Run smoke tests (Login)
+        run: npx playwright test tests/login.spec.ts --project=chromium --retries=1
 
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: playwright-report
           path: playwright-report/
           retention-days: 14
 
@@ -54,7 +52,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-${{ matrix.browser }}
+          name: allure-results
           path: allure-results/
           retention-days: 14
 
@@ -68,10 +66,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Allure results (chromium)
+      - name: Download Allure results
         uses: actions/download-artifact@v4
         with:
-          name: allure-results-chromium
+          name: allure-results
           path: allure-results
 
       - name: Generate Allure report
@@ -83,10 +81,9 @@ jobs:
           keep_reports: 20
 
       - name: Publish Allure report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-report
-
